@@ -1,34 +1,14 @@
-from bs4 import BeautifulSoup
-import requests
-
-from book import Book
-
-
-def save_to_file(path, content):
-    with open(path, "w") as file:
-        file.write(content)
-
-
-def get_source_page(url):
-    response = requests.get(url)
-    if response.status_code != 200:
-        raise Exception(f"Something went wrong {response.status_code}!")
-    else:
-        return response.text
+import scrapper
 
 
 if __name__ == "__main__":
-    # try:
-    source_page = get_source_page(
-        "https://1lib.pl/s/django?yearFrom=2022&yearTo=2022&languages%5B%5D=english")
-
-    if source_page:
-        parser = BeautifulSoup(source_page, "html.parser")
-        items = parser.select("#searchResultBox .bookRow")
-        for item in items:
-            book = Book()
-            book.parse(item)
-            book.print()
-
-    # except Exception as error:
-    # print(error)
+    try:
+        scrapper = scrapper.Scrapper()
+        # scrapper.get_books("https://1lib.pl/s/django?yearFrom=2022&yearTo=2022&languages%5B%5D=english")
+        # scrapper.get_books("https://1lib.pl/s/django",
+        #                    url_params={"yearFrom": 2022, "yearTo": 2022, "languages%5B%5D": "english", "page": 1})
+        scrapper.get_books("https://1lib.pl/s/javascript",
+                           url_params={"yearFrom": 2022, "yearTo": 2022, "languages%5B%5D": "english", "page": 1}, num_of_pages=3)
+        scrapper.save_books_as_json("scrapped_pages/javascript.json")
+    except Exception as error:
+        print(error)

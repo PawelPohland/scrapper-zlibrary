@@ -1,6 +1,3 @@
-import json
-
-
 class Library:
     def __init__(self):
         # contains all books (with or without isbn)
@@ -51,6 +48,12 @@ class Library:
         for book in self._books:
             book.print()
 
-    def export_json(self):
-        serialized = [book.serialize() for book in self._books]
-        return json.dumps(serialized, indent=4)
+    def serialize(self):
+        return [book.serialize() for book in self._books]
+
+    def clear_books(self):
+        self._books.clear()
+        self._books_isbn.clear()
+
+    def count(self):
+        return len(self._books)
