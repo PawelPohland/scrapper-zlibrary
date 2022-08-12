@@ -7,6 +7,7 @@ from zlibrary.library import Library
 from zlibrary.books_not_found import BooksNotFound
 
 import json
+import re
 
 
 class ScrapperError(Exception):
@@ -58,6 +59,21 @@ class Scrapper:
         # TODO
         ...
 
+    # gets last page from pagination (if it exists); pagination is added
+    # via JavaScript, thus need to parse script tag that contains
+    # pagination configuration (pagesTotal)
+    def get_last_page(self, paginator):
+        if paginator:
+            script = paginator.find_next_sibling(name="script")
+            if script:
+                pattern = re.compile(r"pagesTotal:\s*(\d+)")
+                match = pattern.search(script.get_text(strip=True))
+                if match:
+                    return int(match.group(1))
+
+        # not found, assume default value of 1
+        return 1
+
     # returns books from given url (single page)
     def get_page(self, url, url_params):
         source_page = self.get_source_page(url, url_params)
@@ -76,13 +92,10 @@ class Scrapper:
 
                     self.books.add_book(book)
 
-                # pagination - check what is the last possible page to scrap
+                # pagination - check last possible page to scrap
                 if not self.last_page:
-                    links = parser.select('.paginator td[align="center"] a')
-                    if links:
-                        self.last_page = int(links[-1].string)
-                    else:
-                        self.last_page = 1
+                    self.last_page = self.get_last_page(
+                        parser.select_one(".paginator"))
             else:
                 raise BooksNotFound(url, url_params)
 
