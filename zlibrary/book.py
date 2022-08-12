@@ -52,7 +52,8 @@ class Book:
         authors = self.parser.select('[itemprop="author"]')
         if authors:
             for author in authors:
-                self.authors.append(author.string)
+                if author.string:
+                    self.authors.append(author.string)
 
     def parse_publisher(self):
         pub = self.parser.select_one('a[title="Publisher"]')
