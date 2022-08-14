@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+
 import requests
 from requests.exceptions import HTTPError
 
@@ -6,17 +7,11 @@ from zlibrary.book import Book
 from zlibrary.library import Library
 from zlibrary.books_not_found import BooksNotFound
 
+from scrapper.scrapper_error import ScrapperError
+from scrapper.scrapper_file_mgr import ScrapperFileManager
+
 import json
 import re
-
-
-class ScrapperError(Exception):
-    def __init__(self, message, *args):
-        super().__init__(args)
-        self.message = message
-
-    def __str__(self):
-        return f"~ Scrapper Error: {self.message}"
 
 
 class Scrapper:
@@ -24,6 +19,7 @@ class Scrapper:
         self.session = requests.Session()
         self.books = Library()
         self.last_page = None
+        self.file_mgr = ScrapperFileManager()
 
     def __del__(self):
         self.session.close()
@@ -56,8 +52,24 @@ class Scrapper:
 
     # gets download link from parsed book
     def get_download_link(self, url):
-        # TODO
-        ...
+        source_page = self.get_source_page(url, url_params={})
+        if source_page:
+            print(f"~ Parsing download link for: {url}")
+
+            parser = BeautifulSoup(source_page, "html.parser")
+            download_button = parser.select_one(".dlButton")
+            if download_button:
+                dl_link = download_button.get('href', '#')
+                dl_link = f"{Book.base_url}{dl_link}" if dl_link != "#" else ""
+
+                return f"{Book.base_url}{dl_link}"
+
+    def get_books_download_links(self):
+        for book in self.books.books:
+            for file_type in book.files_types:
+                dl_link = self.get_download_link(file_type["url"])
+                if dl_link:
+                    file_type["dl_link"] = dl_link
 
     # gets last page from pagination (if it exists); pagination is added
     # via JavaScript, thus need to parse script tag that contains
@@ -101,6 +113,11 @@ class Scrapper:
 
     # scrapps books from given url
     def get_books(self, url, url_params=None, num_of_pages=1):
+        # TODO:
+        # add parameter "start_from_page" that says from which page scrapping
+        # should start, for example: scrap 5 pages starting from 10th page
+        # get_books(url, url_params, num_of_pages=5, start_from_page=10)
+
         if not url_params:
             url_params = {}
 
@@ -118,19 +135,11 @@ class Scrapper:
                 url_params.update({"page": page_num + 1})
                 self.get_page(url, url_params)
 
-    # saves to external file
-    def save_to_file(self, path, content):
-        try:
-            with open(path, "w") as file:
-                file.write(content)
-        except IOError as error:
-            print(f"File error: {error}")
-
     # saves scrapped books to JSON file
     def save_books_as_json(self, file_path):
         if self.books and self.books.count():
             content = json.dumps(self.books.serialize(), indent=4)
-            self.save_to_file(file_path, content)
+            self.file_mgr.save_to_file(file_path, content)
         else:
             raise ScrapperError("There are no books to save!")
 
@@ -138,3 +147,13 @@ class Scrapper:
     def save_books_as_html(self, file_path):
         # TODO
         ...
+
+    def get_books_from_json(self, path):
+        books_list = self.file_mgr.get_books_from_json_file(path)
+        if books_list:
+            self.clear_scrapped_books()
+
+            for book_dict in books_list:
+                book = Book()
+                book.deserialize(book_dict)
+                self.books.add_book(book)

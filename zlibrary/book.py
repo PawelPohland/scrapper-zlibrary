@@ -1,7 +1,7 @@
 class Book:
     base_url = "https://1lib.pl"
 
-    def __init__(self, parser):
+    def __init__(self, parser=None):
         self.parser = parser
 
         self.id = ""
@@ -104,11 +104,12 @@ class Book:
         print(f"ID: {self.id}")
         print(f"ISBN: {self.isbn}")
         print(f"Title: {self.title}")
+        print(f"Url: {self.url}")
         print(f"Cover: {self.cover}")
-        print(f"Author(s): {', '.join(self.authors)}")
-        print(f"Publisher: {self.publisher}")
         print(f"Year: {self.year}")
         print(f"Language: {self.language}")
+        print(f"Author(s): {', '.join(self.authors)}")
+        print(f"Publisher: {self.publisher}")
         print(f"Files: {self.files_types}")
 
     def __str__(self):
@@ -174,6 +175,7 @@ class Book:
 
         return False
 
+    # returns dictionary object with books properties
     def serialize(self):
         return {
             "id": self.id,
@@ -185,5 +187,18 @@ class Book:
             "language": self.language,
             "authors": [author for author in self.authors],
             "publisher": self.publisher,
-            "file_types": [ft for ft in self.files_types]
+            "files_types": [ft for ft in self.files_types]
         }
+
+    # loads data from dictionary object (loaded from json file)
+    def deserialize(self, book_dict):
+        self.id = book_dict.get("id", "")
+        self.isbn = book_dict.get("isbn", "")
+        self.title = book_dict.get("title", "")
+        self.url = book_dict.get("url", "")
+        self.cover = book_dict.get("cover", "")
+        self.year = book_dict.get("year", "")
+        self.language = book_dict.get("language", "")
+        self.authors = book_dict.get("authors", [])
+        self.publisher = book_dict.get("publisher", "")
+        self.files_types = book_dict.get("files_types", [])
