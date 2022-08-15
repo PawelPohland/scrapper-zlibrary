@@ -112,27 +112,42 @@ class Scrapper:
                 raise BooksNotFound(url, url_params)
 
     # scrapps books from given url
-    def get_books(self, url, url_params=None, num_of_pages=1):
-        # TODO:
-        # add parameter "start_from_page" that says from which page scrapping
-        # should start, for example: scrap 5 pages starting from 10th page
-        # get_books(url, url_params, num_of_pages=5, start_from_page=10)
-
+    def get_books(self, url, url_params=None, num_of_pages=1, start_from_page=1):
         if not url_params:
             url_params = {}
 
         if not num_of_pages:
             num_of_pages = 1
 
+        if not start_from_page:
+            start_from_page = 1
+
+        url_params["page"] = start_from_page
+
         # get first page + check pagination
         self.get_page(url, url_params)
 
-        if num_of_pages > 1 and self.last_page > 1:
-            for page_num in range(1, num_of_pages):
-                if page_num >= self.last_page:
-                    break
+        # asterisk (*) means scrap all available pages
+        if num_of_pages == "*":
+            num_of_pages = self.last_page
 
-                url_params.update({"page": page_num + 1})
+        # get the rest of available pages
+        # if num_of_pages > 1 and self.last_page > 1:
+        #     for page_num in range(1, num_of_pages):
+        #         if page_num >= self.last_page:
+        #             break
+
+        #         url_params.update({"page": page_num + 1})
+        #         self.get_page(url, url_params)
+
+        # get pages base on num_of_pages and start_from_page
+        if num_of_pages > 1 and self.last_page > 1:
+            last_page_to_read = start_from_page + num_of_pages - 1
+            if last_page_to_read > self.last_page:
+                last_page_to_read = self.last_page
+
+            for page_num in range(start_from_page + 1, last_page_to_read + 1, 1):
+                url_params.update({"page": page_num})
                 self.get_page(url, url_params)
 
     # saves scrapped books to JSON file
@@ -145,7 +160,7 @@ class Scrapper:
 
     # saves scrapped books to HTML file
     def save_books_as_html(self, file_path):
-        # TODO
+        # TODO:
         ...
 
     def get_books_from_json(self, path):

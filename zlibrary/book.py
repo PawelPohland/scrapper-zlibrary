@@ -127,6 +127,9 @@ class Book:
                     the_same += 1
                 counter += 1
 
+            if counter == 0:
+                return False
+
             # if at least 60% of authors are the same
             if the_same / counter >= 0.6:
                 return True
