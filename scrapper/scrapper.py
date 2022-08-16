@@ -159,9 +159,10 @@ class Scrapper:
             raise ScrapperError("There are no books to save!")
 
     # saves scrapped books to HTML file
-    def save_books_as_html(self, file_path):
-        # TODO:
-        ...
+    def save_books_as_html(self, file_path, page_title):
+        if self.books and self.books.count():
+            self.file_mgr.render_html_template(
+                path=file_path, page_title=page_title, books=self.books.books)
 
     def get_books_from_json(self, path):
         books_list = self.file_mgr.get_books_from_json_file(path)

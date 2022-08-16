@@ -1,58 +1,59 @@
 import scrapper.scrapper as scrapper
+from scrapper.scrapper_url_params import ScrapperUrlParams
+
+import webbrowser
 
 
-def load_json_and_get_download_links(path):
+def load_books_from_json_file(path):
     scr = scrapper.Scrapper()
-
     scr.get_books_from_json(path)
-    # scr.books.print_books()
-
     return scr
 
 
 def get_download_links(path):
-    scr = load_json_and_get_download_links(path)
-
-    print("*** Getting download links ***")
-
+    scr = load_books_from_json_file(path)
     scr.get_books_download_links()
-    # scr.books.print_books()
     scr.save_books_as_json(path)
 
 
 def get_books(url, url_params=None, num_of_pages=1, start_from_page=1, save_as_json=None):
     scr = scrapper.Scrapper()
     scr.get_books(url, url_params, num_of_pages, start_from_page)
+
     if save_as_json:
         scr.save_books_as_json(save_as_json)
+
+    return scr
+
+
+def render_html_from_json_file(json_path, html_path, page_title, open_in_browser=False):
+    scr = load_books_from_json_file(path=json_path)
+    scr.save_books_as_html(file_path=html_path, page_title=page_title)
+
+    if open_in_browser:
+        fullpath = scr.file_mgr.get_cwd_full_path(file=html_path)
+        webbrowser.open(url=f"file://{fullpath}", new=2)
+
+
+def render_html_from_url(url_params, html_path, page_title, open_in_browser=False):
+    scr = get_books(url=url_params.get_full_url(), url_params={},
+                    num_of_pages=1, start_from_page=1, save_as_json=False)
+    scr.save_books_as_html(file_path=html_path, page_title=page_title)
+
+    if open_in_browser:
+        fullpath = scr.file_mgr.get_cwd_full_path(file=html_path)
+        webbrowser.open(url=f"file://{fullpath}", new=2)
 
 
 if __name__ == "__main__":
     try:
-        # get_books(url="https://1lib.pl/s/django?yearFrom=2022&yearTo=2022&languages%5B%5D=english")
+        # render_html_from_json_file(json_path="scrapped_pages/django.json",
+        #                            html_path="scrapped_pages/django.html",
+        #                            page_title="Django books", open_in_browser=True)
 
-        # get_books(url="https://1lib.pl/s/django", url_params={"yearFrom": 2022, "yearTo": 2022, "languages%5B%5D": "english", "page": 1}, save_as_json="scrapped_pages/django.json")
-
-        # get_books(url="https://1lib.pl/s/javascript",
-        #           url_params={"yearFrom": 2022, "yearTo": 2022,
-        #                       "languages%5B%5D": "english", "page": 1},
-        #           num_of_pages=10,
-        #           save_as_json="scrapped_pages/javascript.json")
-
-        # get_books(
-        #     url="https://pl.b-ok.xyz/s/flask?yearFrom=2022&yearTo=2022&languages%5B%5D=english&languages%5B%5D=polish")
-
-        # get_download_links("scrapped_pages/django.json")
-
-        get_books(url="https://1lib.pl/s/python",
-                  url_params={"yearFrom": 2022, "yearTo": 2022,
-                              "languages%5B%5D": "english"},
-                  num_of_pages=1, start_from_page=1, save_as_json=None)
-
-    # get_books(url="https://1lib.pl/s/python",
-    #           url_params={"yearFrom": 2022, "yearTo": 2022,
-    #                       "languages%5B%5D": "english"},
-    #           num_of_pages=3, start_from_page=1, save_as_json="scrapped_pages/python6-10.json")
-
+        url_params = ScrapperUrlParams(base_url="https://1lib.pl", search_term="javascript", year_from=2022,
+                                       year_to=2022, languages=["english", "polish"], extensions=["pdf"], order="date")
+        render_html_from_url(url_params=url_params, html_path="scrapped_pages/javascript.html",
+                             page_title="JavaScript books", open_in_browser=True)
     except Exception as error:
         print(error)

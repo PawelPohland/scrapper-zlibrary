@@ -33,6 +33,28 @@ class ScrapperUrlParams:
 
         self.order = order
 
+    def get_languages(self):
+        languages = []
+
+        if self.languages and len(self.languages):
+            for lang in self.languages:
+                if lang in ScrapperUrlParams.languages:
+                    languages.append(
+                        f"{urllib.parse.quote('languages[]')}={lang}")
+
+        return languages
+
+    def get_file_extensions(self):
+        extensions = []
+
+        if self.extensions and len(self.extensions):
+            for ext in self.extensions:
+                if ext in ScrapperUrlParams.extensions:
+                    extensions.append(
+                        f"{urllib.parse.quote('extensions[]')}={ext}")
+
+        return extensions
+
     def get_url_params(self):
         url_params = []
 
@@ -42,17 +64,13 @@ class ScrapperUrlParams:
         if self.year_to:
             url_params.append(f"yearTo={self.year_to}")
 
-        if self.languages and len(self.languages):
-            for lang in self.languages:
-                if lang in ScrapperUrlParams.languages:
-                    url_params.append(
-                        f"{urllib.parse.quote('languages[]')}={lang}")
+        lang = self.get_languages()
+        if lang:
+            url_params.extend(lang)
 
-        if self.extensions and len(self.extensions):
-            for ext in self.extensions:
-                if ext in ScrapperUrlParams.extensions:
-                    url_params.append(
-                        f"{urllib.parse.quote('extensions[]')}={ext}")
+        ext = self.get_file_extensions()
+        if ext:
+            url_params.extend(ext)
 
         if self.order in ScrapperUrlParams.order:
             url_params.append(f"order={self.order}")
