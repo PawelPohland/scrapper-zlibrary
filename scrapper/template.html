@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ page_title }}</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap");
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        font-family: "Poppins", sans-serif;
+        font-size: 12px;
+        font-weight: 300;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .scrapped-on {
+        background-color: goldenrod;
+        padding: 0 5px;
+        color: #fff;
+      }
+
+      mark {
+        border-radius: 3px;
+        background-color: red;
+        color: #fff;
+        padding: 2px 5px;
+        font-weight: bold;
+      }
+
+      a,
+      a:link {
+        text-decoration: none;
+        color: #00029a;
+      }
+
+      a:visited {
+        color: teal;
+      }
+
+      a:hover {
+        font-weight: 300;
+      }
+
+      h1 {
+        margin-top: 1.5rem;
+      }
+
+      .books {
+        display: flex;
+        flex-direction: column;
+        margin-top: 1.5rem;
+      }
+
+      .book {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 1rem;
+        transition: all 0.3s ease-in-out;
+        padding: 1rem;
+      }
+
+      .book:hover {
+        box-shadow: 2px 2px 5px 2px rgba(145, 145, 145, 1);
+        background-color: #f5f5f5;
+      }
+
+      .book-title a {
+        font-size: 1.3rem;
+      }
+
+      .book-title a:hover {
+        background-color: #000;
+        color: #fff;
+      }
+
+      .book-details {
+        flex: 2 1 auto;
+      }
+
+      .book-details p {
+        margin-top: 0.4rem;
+      }
+
+      .descr {
+        color: #959494;
+      }
+
+      .download-links a::after {
+        content: "|";
+        padding: 0 5px;
+        color: #959494;
+      }
+      .download-links a:last-child::after {
+        display: none;
+      }
+      .download-links a:hover span {
+        background-color: #000;
+        color: #fff;
+      }
+
+      @media (min-width: 480px) {
+        .book {
+          flex-direction: row;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>
+        Data scrapped on
+        <span class="scrapped-on">{{ generated_at }}</span>
+      </h1>
+      <div class="books">
+        {% for book in books -%}
+        <div class="book">
+          <div class="book-cover">
+            {% if book.cover %}
+            <img src="{{ book.cover }}" alt="{{ book.title }}" />
+            {% endif %}
+          </div>
+          <div class="book-details">
+            <p class="book-title">
+              <a href="{{ book.url }}" target="_blank">{{ book.title }}</a>
+            </p>
+            {% if book.authors %}
+            <p>
+              <span class="descr">Author(s):</span>
+              {{ book.authors | join(', ') }}
+            </p>
+            {% endif %} {% if book.publisher %}
+            <p>
+              <span class="descr">Publisher:</span>
+              {{ book.publisher }}
+            </p>
+            {% endif %} {% if book.year %}
+            <p>
+              <span class="descr">Year:</span>
+              {{ book.year }}
+            </p>
+            {% endif %} {% if book.language %}
+            <p>
+              <span class="descr">Language:</span>
+              {{ book.language }}
+            </p>
+            {% endif %} {% if book.files_types %}
+            <p class="download-links">
+              {% for ft in book.files_types %}
+              <a href="{{ ft.url }}" target="_blank">
+                <span>{{ ft.file_type }} {{ ft.file_size }}</span>
+              </a>
+              {% endfor %}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </main>
+  </body>
+</html>
