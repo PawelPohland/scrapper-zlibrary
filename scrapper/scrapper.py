@@ -173,3 +173,15 @@ class Scrapper:
                 book = Book()
                 book.deserialize(book_dict)
                 self.books.add_book(book)
+
+    def mark_keywords(self, keywords):
+        pattern = f"{'|'.join(keywords)}"
+        regex = re.compile(rf"({pattern})", flags=re.IGNORECASE)
+
+        def mark_keyword(match_obj):
+            if match_obj.group():
+                return f"<mark>{match_obj.group()}</mark>"
+
+        if self.books and self.books.count():
+            for book in self.books.books:
+                book.title = regex.sub(mark_keyword, book.title)
